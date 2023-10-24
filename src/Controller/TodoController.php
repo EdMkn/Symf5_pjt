@@ -22,15 +22,38 @@ class TodoController extends AbstractController
                 'correction' => 'corriger mes examens'
             ];
             $session->set('todos',$todos);
+            $this->addFlash(
+               'info',
+               "La liste des todos vient d'être initialisée"
+            );
         }
         return $this->render('todo/index.html.twig');
     }
 
-    #[Route('/todo/{name}/{content}', name: 'todo.add')]
+    #[Route('/todo/add/{name}/{content}', name: 'todo.add')]
     public function addTodo(Request $request, $name,$content){
         $session = $request->getSession();
         if($session->has('todos')){
-
+            $todos = $session->get('todos');
+            if(isset($todos[$name])) {
+                $this->addFlash(
+                    'error',
+                    "Le todo d'id $name existe déjà"
+                 );
+            } else {
+                $todos[$name] = $content;
+                $this->addFlash(
+                    'success',
+                    "Le todo d'id $name a été ajouté"
+                 );
+                 $session->set('todos',$todos);
+            }
+        } else{
+            $this->addFlash(
+               'error',
+               "La liste des todos n'est pas encore initialisée"
+            );
         }
+        return $this->redirectToRoute('todo');
     }
 }
